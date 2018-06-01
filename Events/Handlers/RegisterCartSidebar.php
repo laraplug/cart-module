@@ -36,16 +36,16 @@ class RegisterCartSidebar implements \Maatwebsite\Sidebar\SidebarExtender
      */
     public function extendWith(Menu $menu)
     {
-        $menu->group(config('asgard.cart.config.sidebar-group'), function (Group $group) {
-            $group->item(trans('cart::cartitems.title.cartitems'), function (Item $item) {
-                $item->icon('fa fa-shopping-cart');
-                $item->weight(0);
-                $item->route('admin.cart.cartitem.index');
-                $item->authorize(
-                    $this->auth->hasAccess('cart.cartitems.index')
-                );
-            });
-        });
+        // $menu->group(config('asgard.cart.config.sidebar-group'), function (Group $group) {
+        //     $group->item(trans('cart::cartitems.title.cartitems'), function (Item $item) {
+        //         $item->icon('fa fa-shopping-cart');
+        //         $item->weight(10);
+        //         $item->route('admin.cart.cartitem.index');
+        //         $item->authorize(
+        //             $this->auth->hasAccess('cart.cartitems.index')
+        //         );
+        //     });
+        // });
 
         return $menu;
     }
