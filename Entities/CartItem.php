@@ -6,6 +6,8 @@ use Exception;
 
 use Modules\Shop\Repositories\ShippingMethodManager;
 
+use Modules\Order\Entities\OrderStatus;
+
 use Illuminate\Database\Eloquent\Model;
 use Modules\Product\Entities\Product;
 use Modules\Shop\Contracts\ShopItemInterface;
@@ -159,7 +161,9 @@ class CartItem extends Model implements ShopItemInterface
      */
     public function toOrderItemArray(ShopItemInterface $parentItem = null)
     {
-        return $this->toArray();
+        $data = $this->toArray();
+        $data['status_id'] = OrderStatus::PENDING;
+        return $data;
     }
 
     /**
