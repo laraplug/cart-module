@@ -50,7 +50,7 @@ class CartItemController extends Controller
                 $request->shop_id,
                 $request->product_id,
                 $request->quantity,
-                $request->get('options', []),
+                $request->get('option_values', []),
                 $request->note
             );
 

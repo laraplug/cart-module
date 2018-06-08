@@ -3,7 +3,6 @@
 namespace Modules\Cart\Entities;
 
 use Exception;
-
 use Modules\Shop\Repositories\ShippingMethodManager;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Product\Entities\Product;
@@ -17,13 +16,12 @@ class CartItem extends Model implements ShopItemInterface
         'price',
         'quantity',
         'note',
-        'options',
+        'option_values',
     ];
     protected $casts = [
-        'options' => 'array',
+        'option_values' => 'collection',
     ];
     protected $appends = [
-        'options',
         'product',
         'total',
         'shipping_method_id',
@@ -49,48 +47,13 @@ class CartItem extends Model implements ShopItemInterface
     /**
      * @inheritDoc
      */
-    public function options()
-    {
-        return $this->hasMany(CartItemOption::class, 'cart_item_id');
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getProductAttribute()
     {
-        return $this->product()->first();
-    }
+        if (!$this->relationLoaded('product')) {
+            $this->load('product');
+        }
 
-    /**
-     * @inheritDoc
-     */
-    public function getOptionsAttribute()
-    {
-        return $this->options()->get();
-    }
-
-    /**
-     * Save Options
-     * @param array $options
-     */
-    public function setOptionsAttribute(array $options = [])
-    {
-        static::saved(function ($model) use ($options) {
-            $savedOptionIds = [];
-            foreach ($options as $slug => $value) {
-                if (empty($value) || !$productOption = $this->product->options()->where('slug', $slug)->first()) {
-                    continue;
-                }
-                $option = $this->options()->updateOrCreate([
-                    'product_option_id' => $productOption->id,
-                ],[
-                    'value' => $value
-                ]);
-                $savedOptionIds[] = $option->id;
-            }
-            $this->options()->whereNotIn('id', $savedOptionIds)->delete();
-        });
+        return $this->getRelation('product');
     }
 
     /**
@@ -168,9 +131,8 @@ class CartItem extends Model implements ShopItemInterface
      */
     public function canChangeQuantity(int $quantity)
     {
-        $product = $this->product()->first();
-        $min = $product->min_order_limit;
-        $max = $product->max_order_limit;
+        $min = $this->product->min_order_limit;
+        $max = $this->product->max_order_limit;
         if($min !== 0 && $quantity < $min) {
             throw new Exception(trans('cart::cartitems.messages.must set at least', ['quantity'=>$min]));
         }

@@ -12,7 +12,7 @@ class CreateCartItemRequest extends FormRequest
             'shop_id' => 'numeric',
             'product_id' => 'numeric',
             'quantity' => 'numeric',
-            'options' => 'array',
+            'option_values' => 'array',
             'note' => 'string',
         ];
     }

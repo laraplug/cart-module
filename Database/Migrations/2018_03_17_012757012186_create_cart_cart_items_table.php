@@ -24,24 +24,10 @@ class CreateCartCartItemsTable extends Migration
             $table->integer('product_id')->unsigned();
             $table->integer('price')->unsigned();
             $table->integer('quantity')->unsigned();
-            $table->text('options')->nullable();
+            $table->json('option_values');
             $table->string('note', 500)->nullable();
 
             $table->timestamps();
-        });
-
-        Schema::create('cart__cart_item_options', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
-            $table->increments('id');
-
-            $table->integer('cart_item_id')->unsigned();
-            $table->integer('product_option_id')->unsigned();
-            $table->text('value');
-
-            $table->timestamps();
-
-            $table->foreign('cart_item_id')->references('id')->on('cart__cart_items')->onDelete('cascade');
-            $table->foreign('product_option_id')->references('id')->on('product__options')->onDelete('cascade');
         });
     }
 
@@ -52,7 +38,6 @@ class CreateCartCartItemsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cart__cart_item_options');
         Schema::dropIfExists('cart__cart_items');
     }
 }

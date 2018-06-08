@@ -24,23 +24,20 @@ class EloquentCartItemRepository extends EloquentBaseRepository implements CartI
     /**
      * @inheritDoc
      */
-    public function firstOrNew($instance, $shopId, $sessionId, $userId, $productId, array $options = [])
+    public function firstOrNew($instance, $shopId, $sessionId, $userId, $productId, array $optionValues = [])
     {
         $items = $this->getWithBuilder($instance, $sessionId, $userId, $productId)->where('shop_id', $shopId)->get();
-        $model = $items->filter(function($item) use ($options) {
+        $model = $items->filter(function($item) use ($optionValues) {
             // 옵션정보가 같은 상품이 있는지 확인
             // Check if there's same option product
-            $itemOptions = collect($item->options)->mapWithKeys(function($option) {
-                return [$option['slug'] => $option['value']];
-            });
-            return collect($options)->diffAssoc($itemOptions)->count() === 0;
+            return collect($optionValues)->diffAssoc($item->option_values)->count() === 0;
         })->first();
         if(!$model) {
             $model = $this->model->newInstance();
             $model->shop_id = $shopId;
             $model->instance = $instance;
             $model->product_id = $productId;
-            $model->options = $options;
+            $model->option_values = $optionValues;
         }
         // Override session&user id
         $model->session_id = $sessionId;
