@@ -1,5 +1,8 @@
 url: https://github.com/laraplug/cart-module
 versions:
-    "0.1.0":
-        added:
-            - Initial Release
+  "0.2.0":
+    changed:
+      - Change item options table into json column
+  "0.1.0":
+    added:
+      - Initial Release
