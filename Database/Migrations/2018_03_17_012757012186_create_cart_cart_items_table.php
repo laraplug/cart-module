@@ -38,6 +38,10 @@ class CreateCartCartItemsTable extends Migration
      */
     public function down()
     {
+        Schema::disableForeignKeyConstraints();
+
         Schema::dropIfExists('cart__cart_items');
+
+        Schema::enableForeignKeyConstraints();
     }
 }
