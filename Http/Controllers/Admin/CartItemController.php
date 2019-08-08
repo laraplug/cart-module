@@ -55,7 +55,6 @@ class CartItemController extends AdminBaseController
     public function store(CreateCartItemRequest $request)
     {
         $this->cartitem->create($request->all());
-
         return redirect()->route('admin.cart.cartitem.index')
             ->withSuccess(trans('core::core.messages.resource created', ['name' => trans('cart::cartitems.title.cartitems')]));
     }

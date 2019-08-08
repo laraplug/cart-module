@@ -53,7 +53,6 @@ class CartItemController extends Controller
                 $request->get('option_values', []),
                 $request->note
             );
-
             return response()->json([
                 'errors' => false,
                 'data' => $this->cart->items()
