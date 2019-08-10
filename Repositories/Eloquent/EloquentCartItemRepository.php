@@ -31,7 +31,7 @@ class EloquentCartItemRepository extends EloquentBaseRepository implements CartI
             // 옵션정보가 같은 상품이 있는지 확인
             // Check if there's same option product
             //
-            // 동명이인 원아 추가시 개수변동으로 인한 혼란으로 이이부분 삭제(Ho)
+            // 동명이인 원아 추가시 개수변동으로 인한 혼란으로 이이부분 삭제(왕규호)
             // return collect($optionValues)->diffAssoc($item->option_values)->count() === 0;
         })->first();
         if(!$model) {
