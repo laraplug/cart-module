@@ -204,7 +204,7 @@ class Cart implements ShopCartInterface
      */
     public function getTotal()
     {
-        return $this->getTotalPrice() + $this->getTotalShipping() + $this->getTotalTax() - $this->getTotalDiscount();
+        return $this->getTotalPrice() + $this->getTotalShipping() + $this->getTotalTax() +$this->getTotalTaxFree()- $this->getTotalDiscount();
     }
 
     /**
@@ -220,9 +220,15 @@ class Cart implements ShopCartInterface
      */
     public function getTotalTax()
     {
-        return 0;
+        //세금 계산 부분 추가 20200903 Ho
+        return Shop::calculateTax($this->items());
     }
 
+//    면세상품 계산
+    public function getTotalTaxFree()
+    {
+        return Shop::calculateTaxFree($this->items());
+    }
     /**
      * @inheritDoc
      */
@@ -257,6 +263,8 @@ class Cart implements ShopCartInterface
         $data['total_tax'] = $this->getTotalTax();
         $data['total_discount'] = $this->getTotalDiscount();
         $data['total_shipping'] = $this->getTotalShipping();
+//        면세 부분 추가 20200904 Ho
+        $data['total_tax_free'] = $this->getTotalTaxFree();
         $data['total'] = $this->getTotal();
 
         if ( $order = Shop::placeOrder($data, $this->items()->all()) ) {
