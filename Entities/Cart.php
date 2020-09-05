@@ -10,6 +10,7 @@ use Modules\Product\Repositories\ProductRepository;
 use Modules\Shop\Contracts\ShopCartInterface;
 use Modules\Shop\Facades\Shop;
 use Modules\User\Contracts\Authentication;
+use PhpParser\Node\Expr\Array_;
 
 /**
  * Cart Model
@@ -204,7 +205,7 @@ class Cart implements ShopCartInterface
      */
     public function getTotal()
     {
-        return $this->getTotalPrice() + $this->getTotalShipping() + $this->getTotalTax() +$this->getTotalTaxFree()- $this->getTotalDiscount();
+        return $this->getTotalPrice() + $this->getTotalShipping() - $this->getTotalDiscount();
     }
 
     /**
@@ -215,23 +216,16 @@ class Cart implements ShopCartInterface
         return Shop::calculateTotalPrice($this->items());
     }
 
-    /**
+    /**Price 를 세금항목으로 나누어 주는 함수 20200905 Ho
      * @inheritDoc
      */
-    public function getTotalTax()
+    public function getTotalTax($data)
     {
         //세금 계산 부분 추가 20200903 Ho
-        return Shop::calculateTax($this->items());
+        return Shop::calculateTotalTax($this->items(),$data);
     }
 
-//    면세상품 계산
-    public function getTotalTaxFree()
-    {
-        return Shop::calculateTaxFree($this->items());
-    }
-    /**
-     * @inheritDoc
-     */
+
     public function getTotalDiscount()
     {
         return 0;
@@ -260,13 +254,14 @@ class Cart implements ShopCartInterface
     public function placeOrder(array $data)
     {
         $data['total_price'] = $this->getTotalPrice();
-        $data['total_tax'] = $this->getTotalTax();
+
+
         $data['total_discount'] = $this->getTotalDiscount();
         $data['total_shipping'] = $this->getTotalShipping();
-//        면세 부분 추가 20200904 Ho
-        $data['total_tax_free'] = $this->getTotalTaxFree();
-        $data['total'] = $this->getTotal();
+        //세금관련 칼럼 추가 20200905 Ho
+        $data = $this->getTotalTax($data);
 
+        $data['total'] = $this->getTotal();
         if ( $order = Shop::placeOrder($data, $this->items()->all()) ) {
             $this->flush();
 
