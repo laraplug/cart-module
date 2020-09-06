@@ -221,8 +221,25 @@ class Cart implements ShopCartInterface
      */
     public function getTotalTax($data)
     {
-        //세금 계산 부분 추가 20200903 Ho
-        return Shop::calculateTotalTax($this->items(),$data);
+        $totalTaxFreeAmount = 0;//면세금액
+        $totalSupplyAmount = 0;//공급가
+        $totalTaxAmount = 0;//부가가치세(세금)
+        foreach ($this->items() as $item){
+            $unitPrice = Shop::calculateUnitPrice($item);
+            $quantity = (int) $item['quantity'];
+            //taxFree 일 경우 면세에만 입력해줌
+            if($item['product']['is_tax_free']){
+                $totalTaxFreeAmount += $unitPrice*$quantity;
+            }else{
+                $unitSupplyAmount = floor(($unitPrice * $quantity)/1.1);
+                $totalSupplyAmount += $unitSupplyAmount;
+                $totalTaxAmount += ($unitPrice * $quantity)-$unitSupplyAmount;
+            }
+        }
+
+        $data['total_tax_free_amount'] = $totalTaxFreeAmount;
+        $data['total_supply_amount'] = $totalSupplyAmount;
+        $data['total_tax_amount'] = $totalTaxAmount;
     }
 
 
@@ -259,7 +276,7 @@ class Cart implements ShopCartInterface
         $data['total_discount'] = $this->getTotalDiscount();
         $data['total_shipping'] = $this->getTotalShipping();
         //세금관련 칼럼 추가 20200905 Ho
-        $data = $this->getTotalTax($data);
+        $this->getTotalTax($data);
 
         $data['total'] = $this->getTotal();
         if ( $order = Shop::placeOrder($data, $this->items()->all()) ) {
