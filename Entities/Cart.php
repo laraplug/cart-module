@@ -10,6 +10,7 @@ use Modules\Product\Repositories\ProductRepository;
 use Modules\Shop\Contracts\ShopCartInterface;
 use Modules\Shop\Facades\Shop;
 use Modules\User\Contracts\Authentication;
+use PhpParser\Node\Expr\Array_;
 
 /**
  * Cart Model
@@ -204,7 +205,7 @@ class Cart implements ShopCartInterface
      */
     public function getTotal()
     {
-        return $this->getTotalPrice() + $this->getTotalShipping() + $this->getTotalTax() - $this->getTotalDiscount();
+        return $this->getTotalPrice() + $this->getTotalShipping() - $this->getTotalDiscount();
     }
 
     /**
@@ -215,17 +216,35 @@ class Cart implements ShopCartInterface
         return Shop::calculateTotalPrice($this->items());
     }
 
-    /**
+    /**Price 를 세금항목으로 나누어 주는 함수 20200905 Ho
      * @inheritDoc
      */
     public function getTotalTax()
     {
-        return 0;
+        $totalTaxFreeAmount = 0;//면세금액
+        $totalSupplyAmount = 0;//공급가
+        $totalTaxAmount = 0;//부가가치세(세금)
+        foreach ($this->items() as $item){
+            $unitPrice = Shop::calculateUnitPrice($item);
+            $quantity = (int) $item['quantity'];
+            //taxFree 일 경우 면세에만 입력해줌
+            if($item['product']['is_tax_free']){
+                $totalTaxFreeAmount += $unitPrice*$quantity;
+            }else{
+                $unitSupplyAmount = floor(($unitPrice * $quantity)/1.1);
+                $totalSupplyAmount += $unitSupplyAmount;
+                $totalTaxAmount += ($unitPrice * $quantity)-$unitSupplyAmount;
+            }
+        }
+
+        return [
+            'total_tax_free_amount' => $totalTaxFreeAmount,
+            'total_supply_amount' => $totalSupplyAmount,
+            'total_tax_amount'=> $totalTaxAmount
+        ];
     }
 
-    /**
-     * @inheritDoc
-     */
+
     public function getTotalDiscount()
     {
         return 0;
@@ -254,11 +273,15 @@ class Cart implements ShopCartInterface
     public function placeOrder(array $data)
     {
         $data['total_price'] = $this->getTotalPrice();
-        $data['total_tax'] = $this->getTotalTax();
+
+
         $data['total_discount'] = $this->getTotalDiscount();
         $data['total_shipping'] = $this->getTotalShipping();
-        $data['total'] = $this->getTotal();
+        //세금관련 칼럼 추가 20200905 Ho
+        $taxData = $this->getTotalTax();
+        $data = array_merge($data,$taxData);
 
+        $data['total'] = $this->getTotal();
         if ( $order = Shop::placeOrder($data, $this->items()->all()) ) {
             $this->flush();
 
