@@ -219,7 +219,7 @@ class Cart implements ShopCartInterface
     /**Price 를 세금항목으로 나누어 주는 함수 20200905 Ho
      * @inheritDoc
      */
-    public function getTotalTax($data)
+    public function getTotalTax()
     {
         $totalTaxFreeAmount = 0;//면세금액
         $totalSupplyAmount = 0;//공급가
@@ -237,9 +237,11 @@ class Cart implements ShopCartInterface
             }
         }
 
-        $data['total_tax_free_amount'] = $totalTaxFreeAmount;
-        $data['total_supply_amount'] = $totalSupplyAmount;
-        $data['total_tax_amount'] = $totalTaxAmount;
+        return [
+            'total_tax_free_amount' => $totalTaxFreeAmount,
+            'total_supply_amount' => $totalSupplyAmount,
+            'total_tax_amount'=> $totalTaxAmount
+        ];
     }
 
 
@@ -276,7 +278,8 @@ class Cart implements ShopCartInterface
         $data['total_discount'] = $this->getTotalDiscount();
         $data['total_shipping'] = $this->getTotalShipping();
         //세금관련 칼럼 추가 20200905 Ho
-        $this->getTotalTax($data);
+        $taxData = $this->getTotalTax();
+        $data = array_merge($data,$taxData);
 
         $data['total'] = $this->getTotal();
         if ( $order = Shop::placeOrder($data, $this->items()->all()) ) {
